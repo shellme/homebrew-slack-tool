@@ -8,7 +8,20 @@ class SlackTool < Formula
   depends_on "go" => :build
 
   def install
-    system "go", "build", "-ldflags", "-s -w", "-o", "#{bin}/slack-tool", "./cmd/slack-tool"
+    # バージョン情報を取得
+    version_tag = "v#{version}"
+    commit_hash = `git rev-parse --short HEAD`.strip
+    build_date = `date -u '+%Y-%m-%d_%H:%M:%S'`.strip
+    
+    # ビルドフラグを設定
+    ldflags = [
+      "-s -w",
+      "-X github.com/shellme/slack-tool/cmd/slack-tool/cmd.version=#{version_tag}",
+      "-X github.com/shellme/slack-tool/cmd/slack-tool/cmd.commit=#{commit_hash}",
+      "-X github.com/shellme/slack-tool/cmd/slack-tool/cmd.date=#{build_date}"
+    ].join(" ")
+    
+    system "go", "build", "-ldflags", ldflags, "-o", "#{bin}/slack-tool", "./cmd/slack-tool"
   end
 
   test do
